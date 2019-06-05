@@ -1,0 +1,11 @@
+import json
+
+def jsonParser( json_file ):
+	try:
+    	  with open('json_file', 'r') as fp:
+    	  	obj = json.load(fp)
+	  print obj
+	except ValueError:
+		print "error loading JSON"
+
+jsonParser( '/tmp/sample.json' )
