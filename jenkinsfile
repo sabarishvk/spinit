@@ -1,5 +1,5 @@
 #!groovy
-podTemplate(label: '${NAME}', containers: [
+podTemplate(label: 'params.NAME', containers: [
     containerTemplate(name: 'hugo', image: 'smesch/hugo', ttyEnabled: true, command: 'cat'),
     containerTemplate(name: 'html-proofer', image: 'smesch/html-proofer', ttyEnabled: true, command: 'cat'),
     containerTemplate(name: 'kubectl', image: 'smesch/kubectl', ttyEnabled: true, command: 'cat',
@@ -10,17 +10,17 @@ podTemplate(label: '${NAME}', containers: [
                   hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
   ]) {
 
-    node('pod-${NAME}') {
+    node('pod-params.NAME') {
 
         def DOCKER_HUB_ACCOUNT = 'sameer10049'
-        def DOCKER_IMAGE_NAME = '${env.NAME}-jenkins'
-        def K8S_DEPLOYMENT_NAME = '${NAME}'
+        def DOCKER_IMAGE_NAME = 'params.NAME-jenkins'
+        def K8S_DEPLOYMENT_NAME = 'params.NAME'
 
-        stage('Clone ${env.NAME} Repository') {
+        stage('Clone params.NAME Repository') {
             checkout scm
  
-            container('${NAME}') {
-                stage('Build ${NAME} Site') {
+            container('params.NAME') {
+                stage('Build params.NAME Site') {
                     sh ("echo building site")
                 }
             }
