@@ -1,8 +1,44 @@
 def label = "mypod-${UUID.randomUUID().toString()}"
-podTemplate(label: label) {
+podTemplate(label: label, containers: [
+	containerTemplate(name: 'kubectl', image: 'smesch/kubectl', ttyEnabled: true, command: 'cat',
+        volumes: [secretVolume(secretName: 'kube-config', mountPath: '/root/.kube')]),
+    containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat',
+        envVars: [containerEnvVar(key: 'DOCKER_CONFIG', value: '/test/'),])],
+        volumes: [secretVolume(secretName: 'docker-config', mountPath: '/test'),
+hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
+]) {
+   
+
     node(label) {
+
+    	    def DOCKER_HUB_ACCOUNT = 'sameer10049'
+        	def DOCKER_IMAGE_NAME = 'label-jenkins'
+			def K8S_DEPLOYMENT_NAME = 'label-k8s'
+       	
+       	stage('Get a Maven project') {
+            git 'https://github.com/jenkinsci/kubernetes-plugin.git'
+            	container('maven') {
+                stage('Build a Maven project') {
+                    sh 'mvn -B clean install && cat'
+                }
+            }
+
+        stage('Get a Golang project') {
+            git url: 'https://github.com/hashicorp/terraform.git'
+            container('golang') {
+                stage('Build a Go project') {
+                    sh """
+                    mkdir -p /go/src/github.com/hashicorp
+                    ln -s `pwd` /go/src/github.com/hashicorp/terraform
+                    cd /go/src/github.com/hashicorp/terraform && make core-dev
+                    cat
+                    """
+                }
+            }
+        }
+
         stage('Run shell') {
-            sh 'echo hello world'
+            sh 'echo hello world && cat'
         }
     }
 }
